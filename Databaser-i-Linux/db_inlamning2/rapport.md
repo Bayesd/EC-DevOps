@@ -203,32 +203,146 @@ Och del 1 är klar även för MongoDB.
 Jag stänger ner MongoDB med CTRL + C.
 
 
-Del 2
+**Del 2**
+
+Som jag tolkar uppgifter skall jag använda mig av bank_accounts tabellen som vi fick i föregående inlämningsuppgift.
+Det är denna tabell som skall refereras till i relationstabellen.
+Det innebär att jag behöver använda foreign key för både locations-ID samt bank-konto.
+
+Jag vet att ID som jag ska referera till i locations är av typen INT, men jag behöver ta reda på hur bank_account tabellen ser ut innan jag kan skapa relationstabellen.
+
+	mysql
 
 
-Del 3
+	USE inlamning1;
+	SELECT * FROM bank_accounts;
+
+ID är av typen INT men kolumnnamnet har gemener och inte versaler som i ID locations tabellen.
+
+Jag passar på att skapa en query där jag tar reda på id för de som jag ska referera i min relationstabell sedan.
+
+	SELECT * FROM bank_accounts WHERE
+		first_name = "Corbin" AND last_name = "Hauck"
+		OR
+		first_name = "Vanya" AND last_name = "Worsell"
+                OR
+		first_name = "Eldon" AND last_name = "McCartan"
+                OR
+		first_name = "Ingunna" AND last_name = "Castellucci";
+
+Vilket ger mig:
+
+	+-----+------------+-------------+---------+
+	| id  | first_name | last_name   | holding |
+	+-----+------------+-------------+---------+
+	|  55 | Corbin     | Hauck       |  449092 |
+	|  89 | Vanya      | Worsell     |  330641 |
+	| 170 | Ingunna    | Castellucci |  471372 |
+	| 174 | Eldon      | McCartan    |   75096 |
+	+-----+------------+-------------+---------+
 
 
-Del 4
+Nu har jag all information som jag behöver från bank_accounts för att kunna skapa relationstabellen enligt instruktionerna.
+
+	USE inlamning2;
+           
+Eftersom tabellen bank_accounts ligger i databas inlamning1 behöver jag ange en längre sökväg i min foreign key än vad jag hade behövt om det hade legat i samma databas.
+
+För att ta fram informationen från locations-tabellen skriver jag återigen:
+
+	SELECT * FROM locations;
+
+Vilket ger:
+
+	+----+---------+------------------+
+	| ID | country | address          |
+	+----+---------+------------------+
+	|  3 | SE      | Vimmerbygatan 20 |
+	|  4 | US      | Asteroid road 5  |
+	|  5 | US      | Comet road 41    |
+	|  6 | SE      | Brunnsgatan 7    |
+	+----+---------+------------------+
+
+För att skapa tabellen skriver jag då följande:
+
+	USE inlamning2;
+	CREATE TABLE relations(
+		bank_account_ID INT UNIQUE NOT NULL,
+		locations_ID INT NOT NULL,
+		FOREIGN KEY (bank_account_ID) REFERENCES inlamning1.bank_accounts(id),
+		FOREIGN KEY (locations_ID) REFERENCES locations(ID)
+	);
+ 
+Jag väljer att göra bank_accounts__ID unik i relationstabellen då jag inte vill att ett bankkonto skall kunna vara kopplat till mer än en location.
+
+Jag väljer också att skriva NOT NULL så att det krävs att det finns en ID referense till båda tabeller. 
+
+För att skapa mina rader så skriver jag in följande:
+
+	INSERT INTO relations (bank_account_ID, locations_ID) 
+		VALUES (55, 6);
+        INSERT INTO relations (bank_account_ID, locations_ID)
+                VALUES (89, 4);
+        INSERT INTO relations (bank_account_ID, locations_ID)
+                VALUES (174, 3);
+        INSERT INTO relations (bank_account_ID, locations_ID)
+                VALUES (170, 5);
+
+Värdena som jag matar in får jag från mina två tidigare querys.
+
+För att se att tabellen blev skapad skriver jag:
+
+	SELECT * FROM relations;
+	
+Vilket ger:
+
+	+-----------------+--------------+
+	| bank_account_ID | locations_ID |
+	+-----------------+--------------+
+	|             174 |            3 |
+	|              89 |            4 |
+	|             170 |            5 |
+	|              55 |            6 |
+	+-----------------+--------------+
+
+Detta är vad som krävs för att del 2 skall vara klart. 
+
+Jag kan göra det i MongoDB om jag vill vilket jag i så fall återkommer till om tiden finns.
+
+**Del 3**
 
 
-Frågor
+**Del 4**
 
-1.
+
+**Frågor**
+
+*1.*
 DBRef
 
-2.
+*2.*
 find()
 
-3.
+*3.*
 
 
-4.
+*4.*
 
 
-5.
+*5.*
 
 
-6.
+*6.*
+
+
+
+
+
+
+
+
+
+
+
 
 
