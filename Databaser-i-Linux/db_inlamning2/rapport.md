@@ -366,15 +366,15 @@ Jag kan även använda mig av JOIN för att lösa uppgiften.
 JOIN tar in ett argument som i detta fallet säger att enbart joinar de rader där id i bank_accounts tabellen har ett motsvarande värde i bank_account_ID kolumnen i relations- tabellen.
 
 JOIN queryn resulterar i:
-
-+-----+------------+-------------+---------+-----------------+--------------+
-| id  | first_name | last_name   | holding | bank_account_ID | locations_ID |
-+-----+------------+-------------+---------+-----------------+--------------+
-| 174 | Eldon      | McCartan    |   75096 |             174 |            3 |
-|  89 | Vanya      | Worsell     |  330641 |              89 |            4 |
-| 170 | Ingunna    | Castellucci |  471372 |             170 |            5 |
-|  55 | Corbin     | Hauck       |  449092 |              55 |            6 |
-+-----+------------+-------------+---------+-----------------+--------------+
+	
+	+-----+------------+-------------+---------+-----------------+--------------+
+	| id  | first_name | last_name   | holding | bank_account_ID | locations_ID |
+	+-----+------------+-------------+---------+-----------------+--------------+
+	| 174 | Eldon      | McCartan    |   75096 |             174 |            3 |
+	|  89 | Vanya      | Worsell     |  330641 |              89 |            4 |
+	| 170 | Ingunna    | Castellucci |  471372 |             170 |            5 |
+	|  55 | Corbin     | Hauck       |  449092 |              55 |            6 |
+	+-----+------------+-------------+---------+-----------------+--------------+
 
 Här får jag ut ett resultat med två extra kolumner jämfört med subqueryn.
 
