@@ -157,6 +157,10 @@ Jag kan även använda insertMany() och mata in allting med ett kommando. Båda 
 
 Jag använder mig av det andra sättet då det innebär mindre kod.
 
+En viktig skillnad här är att jag behöver använda hakparenteser för att säga till MongoDB att det är en lista med dokument som jag matar in. 
+
+Om jag använder insert() behövs det inga hakparenteser.
+
 	db.locations.insertMany([
 		{country: "SE", address: "Vimmerbygatan 20"},
 		{country: "US", address: "Asteroid road 5"},
@@ -164,9 +168,9 @@ Jag använder mig av det andra sättet då det innebär mindre kod.
 		{country: "SE", address: "Brunnsgatan 7"}
 	])  
 
-En viktig skillnad här är att jag behöver använda hakparenteser för att säga till MongoDB att det är en lista med dokument som jag matar in. 
+Jag använder inga sitationstecken för nycklarna (country och address) eftersom MongoDB och BSON tillåter det. 
 
-Om jag använder insert() behövs det inga hakparenteser.
+Hade jag däremot gjort JSON-objekt och importerat hade jag behövt sätta nyckelvärdena inom situationstecken (alt. enkelfnuttar).
 
 För att se att datan matades in ordentligt skriver jag återigen:
 
