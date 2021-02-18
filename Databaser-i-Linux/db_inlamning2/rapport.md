@@ -1,4 +1,4 @@
-**Del 1**
+##Del 1
 
 Jag använder mig av en Digital Ocean server som jag ansluter till via ssh.
 
@@ -203,7 +203,7 @@ Och del 1 är klar även för MongoDB.
 Jag stänger ner MongoDB med CTRL + C.
 
 
-**Del 2**
+##Del 2
 
 Som jag tolkar uppgifter skall jag använda mig av bank_accounts tabellen som vi fick i föregående inlämningsuppgift.
 Det är denna tabell som skall refereras till i relationstabellen.
@@ -225,9 +225,9 @@ Jag passar på att skapa en query där jag tar reda på id för de som jag ska r
 		first_name = "Corbin" AND last_name = "Hauck"
 		OR
 		first_name = "Vanya" AND last_name = "Worsell"
-                OR
+		OR
 		first_name = "Eldon" AND last_name = "McCartan"
-                OR
+		OR
 		first_name = "Ingunna" AND last_name = "Castellucci";
 
 Vilket ger mig:
@@ -281,12 +281,12 @@ För att skapa mina rader så skriver jag in följande:
 
 	INSERT INTO relations (bank_account_ID, locations_ID) 
 		VALUES (55, 6);
-        INSERT INTO relations (bank_account_ID, locations_ID)
-                VALUES (89, 4);
-        INSERT INTO relations (bank_account_ID, locations_ID)
-                VALUES (174, 3);
-        INSERT INTO relations (bank_account_ID, locations_ID)
-                VALUES (170, 5);
+	INSERT INTO relations (bank_account_ID, locations_ID)
+		VALUES (89, 4);
+	INSERT INTO relations (bank_account_ID, locations_ID)
+		VALUES (174, 3);
+	INSERT INTO relations (bank_account_ID, locations_ID)
+		VALUES (170, 5);
 
 Värdena som jag matar in får jag från mina två tidigare querys.
 
@@ -309,13 +309,184 @@ Detta är vad som krävs för att del 2 skall vara klart.
 
 Jag kan göra det i MongoDB om jag vill vilket jag i så fall återkommer till om tiden finns.
 
-**Del 3**
+##Del 3
+
+De två sätt som jag kan utföra detta på är antingen med s.k. subqueries samt med JOIN.
+
+Jag tycker att båda är värda att göra och börjar med subqueries.
+
+Eftersom jag vill ha datan från bankkonton så ställer jag min i databasen inlamning1
+
+	USE inlamning1;
+
+Min query ser ut såhär:
+
+	SELECT * FROM bank_accounts WHERE id IN(
+		SELECT bank_account_ID FROM inlamning2.relations
+		);
+
+Den säger att jag vill ha alla bankkonton som har id som finns i databas "inlamning2", tabell "relations".
+
+Själva subqueryn är "SELECT bank_account_ID FROM inlamning2.relations" som ligger inom parenteserna.
+
+Om jag enbart kör den får jag tillbaka:
+
+	+-----------------+
+	| bank_account_ID |
+	+-----------------+
+	|             174 |
+	|              89 |
+	|             170 |
+	|              55 |
+	+-----------------+
+
+Dessa värden används sedan i "SELECT * FROM bank_accounts WHERE id IN" på samma sätt som om jag har skrivit:
+
+	SELECT * FROM bank_accounts WHERE id = 174 
+					OR id = 89 
+					OR id = 170 
+					OR id = 55;
+ 
+Queryn ger mig resultatet:
+
+	+-----+------------+-------------+---------+
+	| id  | first_name | last_name   | holding |
+	+-----+------------+-------------+---------+
+	| 174 | Eldon      | McCartan    |   75096 |
+	|  89 | Vanya      | Worsell     |  330641 |
+	| 170 | Ingunna    | Castellucci |  471372 |
+	|  55 | Corbin     | Hauck       |  449092 |
+	+-----+------------+-------------+---------+
+
+Jag kan även använda mig av JOIN för att lösa uppgiften.
+
+	SELECT * FROM bank_accounts
+	JOIN inlamning2.relations ON id = bank_account_ID;
+
+JOIN tar in ett argument som i detta fallet säger att enbart joinar de rader där id i bank_accounts tabellen har ett motsvarande värde i bank_account_ID kolumnen i relations- tabellen.
+
+JOIN queryn resulterar i:
+
++-----+------------+-------------+---------+-----------------+--------------+
+| id  | first_name | last_name   | holding | bank_account_ID | locations_ID |
++-----+------------+-------------+---------+-----------------+--------------+
+| 174 | Eldon      | McCartan    |   75096 |             174 |            3 |
+|  89 | Vanya      | Worsell     |  330641 |              89 |            4 |
+| 170 | Ingunna    | Castellucci |  471372 |             170 |            5 |
+|  55 | Corbin     | Hauck       |  449092 |              55 |            6 |
++-----+------------+-------------+---------+-----------------+--------------+
+
+Här får jag ut ett resultat med två extra kolumner jämfört med subqueryn.
+
+Jag kan specificera vilka kolumner jag vill ha ut genom att ersätta mitt wildcard *
+
+	SELECT id, first_name, last_name, holding FROM bank_accounts
+		JOIN inlamning2.relations ON id = bank_account_ID;
+
+alternativt:
+
+	SELECT bank_accounts.* FROM bank_accounts
+		JOIN inlamning2.relations ON id = bank_account_ID;
+ 
+Vilka båda ger samma resultat som subqueryn:
+
+	+-----+------------+-------------+---------+
+	| id  | first_name | last_name   | holding |
+	+-----+------------+-------------+---------+
+	| 174 | Eldon      | McCartan    |   75096 |
+	|  89 | Vanya      | Worsell     |  330641 |
+	| 170 | Ingunna    | Castellucci |  471372 |
+	|  55 | Corbin     | Hauck       |  449092 |
+	+-----+------------+-------------+---------+
+
+Det går även att välja färre kolumner i resultatet för subqueryn, t.ex. kanske jag bara vill ha ut holding för dessa 4 konton:
+
+	SELECT holding FROM bank_accounts WHERE id IN(
+                SELECT bank_account_ID FROM inlamning2.relations
+                );
+ 
+Då får jag tillbaka:
+
+	+---------+
+	| holding |
+	+---------+
+	|   75096 |
+	|  330641 |
+	|  471372 |
+	|  449092 |
+	+---------+
+
+Men jag kan inte få mer kolumner är de som finns i tabellen som efterfrågas i den yttersta queryn, den som ligger utanför parenteserna.
+"SELECT holding FROM bank_accounts" i detta fallet. 
+
+Jag ser att jag har missat en nivå av frågan. Det är enbart de konton som är kopplade till country "SE" som ska visas i resultatet.
+
+jag flyttar mig till databas inlamning2 för detta då det blir mindre kod.
+
+	USE inlamning2;
+
+Det är samma sökning men jag behöver lägga till ytterligare en subquery för att få fram detta resultat.
+
+Subquery för denna sökning:
+
+	SELECT * FROM inlamning1.bank_accounts WHERE id IN (
+		SELECT bank_account_ID FROM relations WHERE locations_ID IN(
+			SELECT ID FROM locations WHERE country="SE"
+		)
+	);
+
+Vilket ger mig:
+
+	+-----+------------+-----------+---------+
+	| id  | first_name | last_name | holding |
+	+-----+------------+-----------+---------+
+	| 174 | Eldon      | McCartan  |   75096 |
+	|  55 | Corbin     | Hauck     |  449092 |
+	+-----+------------+-----------+---------+
+
+JOIN frågan ser ut såhär:
+
+	SELECT inlamning1.bank_accounts.*, locations.country FROM inlamning1.bank_accounts, locations
+		JOIN relations ON locations.ID = relations.locations_ID 
+		WHERE locations.country = "SE"
+		AND inlamning1.bank_accounts.id = relations.bank_account_ID;
+
+Här la jag till country kolumnen från locations tabellen i resultaten och får ut:
+
+	+-----+------------+-----------+---------+---------+
+	| id  | first_name | last_name | holding | country |
+	+-----+------------+-----------+---------+---------+
+	| 174 | Eldon      | McCartan  |   75096 | SE      |
+	|  55 | Corbin     | Hauck     |  449092 | SE      |
+	+-----+------------+-----------+---------+---------+
+
+Jag har svårt att förklara vad jag har gjort här. 
+En felaktig JOIN query kan ge väldigt konstiga resultat som jag inte förstår mig på.
+Om jag inte har med sista raden som specificerar att jag enbart vill att radernas id måste finnas både i bank_accounts- och relationstabellerna,
+
+så får jag ut ett resultat där alla rader i bank_accounts dubbleras och alla konton har värde "SE" i den tillagda "country" kolumnen:
+
+	+------+-----------------+----------------+---------+---------+
+	| id   | first_name      | last_name      | holding | country |
+	+------+-----------------+----------------+---------+---------+
+	|    1 | Grete           | Gulliver       |  463797 | SE      |
+	|    1 | Grete           | Gulliver       |  463797 | SE      |
+	...
+
+	|  999 | Ashbey          | Stovold        |  156360 | SE      |
+	|  999 | Ashbey          | Stovold        |  156360 | SE      |
+	| 1000 | Georgine        | Ocheltree      |  106479 | SE      |
+	| 1000 | Georgine        | Ocheltree      |  106479 | SE      |
+	+------+-----------------+----------------+---------+---------+
+
+Det går säkert att förstå varför, men jag tänker att jag har demonstrerat att jag förstår hur man gör Subquerys ordentligt, 
+
+samt att jag har tålamodet av att klura ut hur JOIN querys skulle specificeras i detta fallet. 
+
+##Del 4
 
 
-**Del 4**
-
-
-**Frågor**
+##Frågor
 
 *1.*
 DBRef
