@@ -1,4 +1,4 @@
-##Del 1
+## Del 1
 
 Jag använder mig av en Digital Ocean server som jag ansluter till via ssh.
 
@@ -203,7 +203,7 @@ Och del 1 är klar även för MongoDB.
 Jag stänger ner MongoDB med CTRL + C.
 
 
-##Del 2
+## Del 2
 
 Som jag tolkar uppgifter skall jag använda mig av bank_accounts tabellen som vi fick i föregående inlämningsuppgift.
 Det är denna tabell som skall refereras till i relationstabellen.
@@ -309,7 +309,7 @@ Detta är vad som krävs för att del 2 skall vara klart.
 
 Jag kan göra det i MongoDB om jag vill vilket jag i så fall återkommer till om tiden finns.
 
-##Del 3
+## Del 3
 
 De två sätt som jag kan utföra detta på är antingen med s.k. subqueries samt med JOIN.
 
@@ -483,10 +483,10 @@ Det går säkert att förstå varför, men jag tänker att jag har demonstrerat 
 
 samt att jag har tålamodet av att klura ut hur JOIN querys skulle specificeras i detta fallet. 
 
-##Del 4
+## Del 4
 
 
-##Frågor
+## Frågor
 
 *1.*
 DBRef
