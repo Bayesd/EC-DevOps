@@ -646,7 +646,7 @@ Ip-adress, eventuellt portnummer, ett användarnamn samt lösenord att logga in 
 Jag behöver även veta vilken databas som jag ska logga in på MongoDB eller Mariadb/MySQL.
 
 
-####5. Varför skulle man vilja använda sig utav en databas?
+#### 5. Varför skulle man vilja använda sig utav en databas?
 
 Först och främst behöver man ha data som man vill lagra.\
 Väljer man då att lagra data i en databas så får du en struktur på din data som möjliggör överskådlighet.
