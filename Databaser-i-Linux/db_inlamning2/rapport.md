@@ -1,4 +1,5 @@
 ## Del 1
+###
 
 Jag använder mig av en Digital Ocean server som jag ansluter till via ssh.
 
@@ -461,9 +462,8 @@ Här la jag till country kolumnen från locations tabellen i resultaten och får
 	+-----+------------+-----------+---------+---------+
 
 Jag har svårt att förklara vad jag har gjort här. 
-En felaktig JOIN query kan ge väldigt konstiga resultat som jag inte förstår mig på.
+En felaktig JOIN query kan ge väldigt konstiga resultat som jag inte förstår mig på.\
 Om jag inte har med sista raden som specificerar att jag enbart vill att radernas id måste finnas både i bank_accounts- och relationstabellerna,
-
 så får jag ut ett resultat där alla rader i bank_accounts dubbleras och alla konton har värde "SE" i den tillagda "country" kolumnen:
 
 	+------+-----------------+----------------+---------+---------+
@@ -484,34 +484,188 @@ Det går säkert att förstå varför, men jag tänker att jag har demonstrerat 
 samt att jag har tålamodet av att klura ut hur JOIN querys skulle specificeras i detta fallet. 
 
 ## Del 4
+**CREATE**
 
+*För att skapa en ny rad/nytt dokument i "bank_accounts":*
+
+SQL
+
+    INSERT INTO bank_accounts (first_name, last_name, holding) 
+    VALUES ("Leo", "Möller", 666);
+
+MongoDB:
+
+    db.bank_accounts.insert(
+        {
+            first_name: "Leo", 
+            last_name: "Möller", 
+            holding: 666
+        }
+    )
+
+I MySQL behöver jag skapa tabellen och definiera hur innehållet ska se ut innan ja gkan mata in data.
+I detta fall hade det sett ut såhär:
+
+    CREATE TABLE bank_accounts(
+        id INT PRIMARY KEY AUTO_INCREMENT,
+        first_name VARCHAR(256),
+        last_name VARCHAR(256),
+        holding INT
+    );
+
+I MongoDB skapas collectionen av frågan ifall den inte skulle existera på förhand.
+
+**READ**
+
+*För att hitta det jag precis matade in:*
+
+SQL:
+    
+    SELECT * FROM bank_accounts
+    WHERE first_name = "Leo"
+    AND last_name = "Möller";
+
+MongoDB:
+
+    db.bank_accounts.find(
+        {
+            first_name:"Leo", 
+            last_name:"Möller"
+        }
+    )
+
+**UPDATE**
+
+*För att uppdatera "holding" i det jag matade in i CREATE delen ovan:*
+
+SQL:
+    
+    UPDATE bank_accounts
+    SET holding = 999999
+    WHERE first_name = "Leo"
+    AND last_name = "Möller";
+
+MongoDB:
+
+    db.bank_accounts.update(
+        {
+            first_name:"Leo", 
+            last_name:"Möller"
+        },
+        {
+        $set:
+            {
+            holding: 999999
+            }})
+
+**DELETE**
+
+*För att ta bort det jag har skapat och uppdaterat:*
+
+SQL:
+
+    DELETE FROM bank_accounts 
+    WHERE first_name = "Leo"
+    AND last_name = "Möller";
+
+MongoDB:
+
+    db.bank_accounts.remove(
+        {
+            first_name:"Leo", 
+            last_name:"Möller"
+        }
+    )
+
+*För att ta bort tabell/collection "bank_accounts":*
+
+SQL:
+
+    DROP TABLE bank_accounts;
+
+MongoDB:
+
+    db.bank_accounts.drop()
 
 ## Frågor
 
-*1.*
+#### 1. Vad är motsvarigheten i MongoDB till en foreign key?
+
 DBRef
 
-*2.*
+#### 2. Vad är motsvarigheten till en SELECT i MongoDB?
+
 find()
 
-*3.*
+#### 3. Hur hade du löst del 2 och 3 i MongoDB? (du behöver inte göra en komplett lösning, men beskriv på ett ungefär hur du hade gjort)
+
+**Del 2:**\
+Jag hade fört in den data, som i SQL ligger i locations-tabellen, direkt i dokumentet för respektive person.\
+Eftersom MongoDB är dynamiskt i hur collections och dokument kan utformas så innebär detta inte ett problem utan blir, i mitt tycke, ett enklare sätt att lösa problemet.\
+Ett exempeldokument hade då sett ut såhär:
+
+    {
+        "_id" : ObjectId("6012b0b199db1eeb3859bcad"),
+        "id" : 55,
+        "first_name" : "Corbin",
+        "last_name" : "Hauck",
+	    "holding" : 449092, 
+        "locations" : [ 
+            {
+            "country" : "SE",
+            "address" : "Brunnsgatan 7"
+            }
+        ]
+    }
+
+Detta hade åstadkommits (om samma data fanns i bank_accounts collection i mongo) med frågan:
+
+    db.bank_accounts.update(
+        { id : 55 },
+        {
+        $push : {
+                locations : {
+            country : "SE",
+            address : "Brunnsgatan 7"
+                }
+            }
+        }
+    )
+
+Jag hade kunna skapa en collections som hette locations och använda mig av DBRef för att koppla samman dokument i de två\ 
+collectionerna men eftersom det är så lite data som ska läggas in ser jag det som onödigt i detta fall.
+
+**Del 3:**\
+För att få fram de som har "SE" som värde för nyckeln "country" utformas query följande:
+
+    db.bank_accounts.find( { "locations.country" : "SE" } ).pretty()
+
+#### 4. Vad behöver du för information för att kunna logga in i någon annans databas?
+
+Ip-adress, eventuellt portnummer, ett användarnamn samt lösenord att logga in med.
+Jag behöver även veta vilken databas som jag ska logga in på MongoDB eller Mariadb/MySQL.
 
 
-*4.*
+####5. Varför skulle man vilja använda sig utav en databas?
+
+Först och främst behöver man ha data som man vill lagra.\
+Väljer man då att lagra data i en databas så får du en struktur på din data som möjliggör överskådlighet.
+Datan blir sökbar så att du inte behöver leta länge om du vet vad du letar efter.
+Det ger dig också möjlighet att enkelt hålla din data uppdaterad.\
+Varför du skulle vilja använda någon annans databas skulle kunna vara för att du är intresserad av datan i den.\
+Det går också att säga att du indirekt använder en uppsjö av databaser omedvetet eftersom våra handlingar och metadata
+kring våra handlingar på internet sparas i databaser och används för att vi ska t.ex. kunna logga in på facebook eller
+köpa saker från Amazon. 
 
 
-*5.*
-
-
-*6.*
-
-
-
-
-
-
-
-
+#### 6. Nämn några andra ställen / situationer utöver databaser som CRUD används
+                                                                             
+Jag vet ingenstans där uttrycket CRUD används utanför data som hanteras av databaser.\
+Men där databaser är implementerade i bakgrunden är ju även CRUD funktionalitet möjligt.\
+Till exempel för att skapa ett konto på en hemsida så används Create. Kan du även uppdatera din information så har du \
+Update och kan du ta bort ditt konto har du Delete. Kan du söka på andra användare så finns det Read funktionalitet.\
+Eftersom databasanvändningen är så utbredd så finns det väldigt många ställen där CRUD används.\
+Hemsidor, butikslager, dataspel, mobilappar m.m.
 
 
 
